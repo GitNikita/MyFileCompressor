@@ -3,6 +3,9 @@ using System.IO.Compression;
 
 namespace MyFileCompressor.Class
 {
+    /// <summary>
+    /// Статический класс для вызова компрессии 
+    /// </summary>
     public static class Compress
     {
         public static long Compressing(File file)

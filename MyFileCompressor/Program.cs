@@ -36,6 +36,9 @@ namespace MyFileCompressor
             f.SizeByteAfterCompress = Compress.Compressing(f);
 
             Console.WriteLine(f.ToString());
+
+            File f1 = new File(f.Path + ".gz");
+            Decompress.Decompressing(f1);
         }
     }
 }

@@ -13,7 +13,7 @@ namespace MyFileCompressor.Class
         {
             using (FileStream originalFileStream = file.Info.OpenRead())
             {
-                var currentFileName = file.Path;
+                var currentFileName = file.FullName;
                 var newFileName = currentFileName.Remove(currentFileName.Length - file.Info.Extension.Length);
 
                 using (FileStream decompressedFileStream = System.IO.File.Create(newFileName))

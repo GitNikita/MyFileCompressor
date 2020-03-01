@@ -11,10 +11,15 @@ namespace MyFileCompressor.Class
         /// Короткое название файла
         /// </summary>
         public string Name { get; private set; }
+
+        /// <summary>
+        /// Короткое название файла
+        /// </summary>
+        public string FullNameGz { get; private set; }
         /// <summary>
         /// Полное название файла
         /// </summary>
-        public string Path { get; private set; }
+        public string FullName { get; private set; }
 
         /// <summary>
         /// Размер до компрессии в байтах
@@ -46,10 +51,11 @@ namespace MyFileCompressor.Class
         /// <param name="path"></param>
         public File(string path)
         {
-            Path = path;
+            FullName = path;
             Info = new FileInfo(path);
             SizeByteBeforeCompress = Info.Length;
             Name = Info.Name;
+            FullNameGz = FullName + ".gz";
             MinPart = SizeByteBeforeCompress <= 1024 ? 1 : (int)( SizeByteBeforeCompress / 1024 );
         }
 

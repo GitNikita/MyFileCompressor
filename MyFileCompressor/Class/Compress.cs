@@ -1,5 +1,7 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.IO.Compression;
+using System.Threading;
 
 namespace MyFileCompressor.Class
 {
@@ -10,18 +12,67 @@ namespace MyFileCompressor.Class
     {
         public static long Compressing(File file)
         {
-            using (FileStream fileStream = file.Info.OpenRead())
+            int countThreads;
+            long finishLenght;
+
+            countThreads = 1;//Environment.ProcessorCount;
+
+            using (FileStream mainStream = new FileStream(file.FullName, FileMode.Open, FileAccess.Read, FileShare.Read))
             {
-                using (FileStream compressedFileStream = System.IO.File.Create(file.Info.FullName + ".gz"))
+                using (FileStream gzFileStream = new FileStream(file.FullNameGz, FileMode.Create, FileAccess.Write, FileShare.Write))
                 {
-                    using (GZipStream compressionStream = new GZipStream(compressedFileStream,
-                       CompressionMode.Compress))
+                    using (GZipStream gzFileCompressStream = new GZipStream(gzFileStream, CompressionMode.Compress))
                     {
-                        fileStream.CopyTo(compressionStream);
+                        long size = mainStream.Length / countThreads;
+                        Thread[] threads = new Thread[countThreads];
+                        for (int i = 0; i < countThreads; i++)
+                        {
+                            long start = i * size;
+                            long partSize = size + (i == countThreads - 1 ? mainStream.Length % countThreads : 0);
+
+                            threads[i] = new Thread(() => WriteFilePart(file, start, partSize));
+                        }
+                        foreach (Thread t in threads)
+                        {
+                            t.Start();
+                        }
+
+                        foreach (Thread t in threads)
+                        {
+                            t.Join();
+                        }
+
+                        finishLenght = gzFileStream.Length;
                     }
                 }
-                FileInfo result = new FileInfo(file.Path + ".gz");
-                return result.Length;
+            }
+            return finishLenght;
+        }
+
+        static void WriteFilePart(File file, long start, long partSize)
+        {
+            using (FileStream mainStream = new FileStream(file.FullName, FileMode.Open, FileAccess.Read, FileShare.Read))
+            {
+                using (FileStream gzFileStream = new FileStream(file.FullNameGz, FileMode.Open, FileAccess.Write, FileShare.Write))
+                {
+                    using (GZipStream gzFileCompressStream = new GZipStream(gzFileStream, CompressionMode.Compress))
+                    {
+                        mainStream.Position = start;
+                        gzFileStream.Position = start;
+
+                        const int bufferSize = 1024;
+
+                        byte[] buffer = new byte[Math.Min(bufferSize, partSize)];
+                        while (partSize > 0)
+                        {
+                            int bytesRead = mainStream.Read(buffer, 0, bufferSize);
+                            if (bytesRead == 0) break;
+
+                            gzFileCompressStream.Write(buffer, 0, bytesRead);
+                            partSize -= bytesRead;
+                        }
+                    }
+                }
             }
         }
     }

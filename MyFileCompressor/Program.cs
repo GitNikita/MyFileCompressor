@@ -37,8 +37,8 @@ namespace MyFileCompressor
 
             Console.WriteLine(f.ToString());
 
-            File f1 = new File(f.Path + ".gz");
-            Decompress.Decompressing(f1);
+            //File f1 = new File(f.FullName + "dddd.gz");
+            //Decompress.Decompressing(f1);
         }
     }
 }
